@@ -7,9 +7,10 @@ static buddy_alloc_t *buddy_alloc;
 
 void *pseudo_malloc(size_t size) {
     if (buddy_alloc == NULL) {
+        size_t number_of_blocks = BUDDY_SIZE / BUDDY_BLOCK;
         buddy_alloc = mmap(NULL, sizeof(buddy_alloc_t), PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
         buddy_alloc->base = mmap(NULL, BUDDY_SIZE, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
-        buddy_alloc->bitmap = mmap(NULL, BUDDY_BLOCK, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+        buddy_alloc->bitmap = mmap(NULL, number_of_blocks / 8, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
         buddy_alloc->size = BUDDY_SIZE;
     }
     size_t page_size = sysconf(_SC_PAGESIZE);
