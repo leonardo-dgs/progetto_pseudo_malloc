@@ -4,6 +4,7 @@ typedef struct {
     BitmapTree *bitmap;
     void *base;
     size_t size;
+    size_t min_block;
 } BuddyAllocator;
 
 void buddy_init(BuddyAllocator *allocator, size_t size, size_t min_block);
