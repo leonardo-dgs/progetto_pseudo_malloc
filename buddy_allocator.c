@@ -3,6 +3,7 @@
 
 #include "buddy_allocator.h"
 
+int pointer_to_index(BuddyAllocator *allocator, void* ptr);
 int size_to_order(BuddyAllocator *allocator, size_t size);
 int index_to_order(BuddyAllocator *allocator, size_t index);
 int buddy_alloc_r(BuddyAllocator *allocator, int node_index, int target_order);
@@ -24,8 +25,14 @@ void *buddy_alloc(BuddyAllocator *allocator, size_t size) {
     return (char*) allocator->base + index * allocator->min_block;
 }
 
-void buddy_free(void* ptr) {
-
+void buddy_free(BuddyAllocator *allocator, void* ptr) {
+    int index = pointer_to_index(allocator, ptr);
+    bitmaptree_mark_free(allocator->bitmap, index);
+    int buddy_index = bitmaptree_buddy(allocator->bitmap, index);
+    if (bitmaptree_is_free(allocator->bitmap, buddy_index)) {
+        int parent_index = bitmaptree_parent(allocator->bitmap, index);
+        bitmaptree_mark_free(parent_index);
+    }
 }
 
 int buddy_alloc_r(BuddyAllocator *allocator, int node_index, int target_order) {
@@ -54,6 +61,10 @@ int buddy_alloc_r(BuddyAllocator *allocator, int node_index, int target_order) {
         return buddy_alloc_r(allocator, left_child_index, target_order);
     }
     return -1;
+}
+
+int pointer_to_index(BuddyAllocator *allocator, void* ptr) {
+    return ((char*) ptr - (char*) allocator->base) / allocator->min_block;
 }
 
 int size_to_order(BuddyAllocator *allocator, size_t size) {
