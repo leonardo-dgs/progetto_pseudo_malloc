@@ -3,6 +3,10 @@
 
 #include "pseudo_malloc.h"
 
+typedef struct {
+    size_t size;
+} BlockHeader;
+
 static BuddyAllocator *buddy_alloc;
 
 void *pseudo_malloc(size_t size) {
@@ -23,6 +27,11 @@ void *pseudo_malloc(size_t size) {
 }
 
 void pseudo_free(void *pointer) {
-    BlockHeader *header = ((BlockHeader *) pointer) - 1;
-    munmap(header, sizeof(BlockHeader) + header->size);
+    if (pointer >= buddy_alloc->base && pointer < buddy_alloc->base + buddy_alloc->size) {
+        buddy_free(pointer);
+    }
+    else {
+        BlockHeader *header = ((BlockHeader *) pointer) - 1;
+        munmap(header, sizeof(BlockHeader) + header->size);
+    }
 }
