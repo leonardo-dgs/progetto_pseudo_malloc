@@ -5,6 +5,8 @@ typedef struct {
     size_t min_block;
 } BitmapTree;
 
+BitmapTree* bitmaptree_new(size_t size, size_t min_block);
+
 void bitmaptree_init(BitmapTree *tree, size_t size, size_t min_block);
 
 int bitmaptree_is_split(BitmapTree *tree, int index);

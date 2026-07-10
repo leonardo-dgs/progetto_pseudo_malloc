@@ -11,8 +11,7 @@ static BuddyAllocator *buddy_alloc;
 
 void *pseudo_malloc(size_t size) {
     if (buddy_alloc == NULL) {
-        buddy_alloc = mmap(NULL, sizeof(BuddyAllocator), PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
-        buddy_init(buddy_alloc, BUDDY_SIZE, BUDDY_BLOCK);
+        buddy_alloc = buddy_new(BUDDY_SIZE, BUDDY_BLOCK);
     }
     size_t page_size = sysconf(_SC_PAGESIZE);
     if (size < page_size / 4) {

@@ -7,11 +7,16 @@ int pointer_to_index(BuddyAllocator *allocator, void* ptr);
 int buddy_alloc_r(BuddyAllocator *allocator, int node_index, int target_order);
 void buddy_free_r(BuddyAllocator *allocator, int index);
 
+BuddyAllocator* buddy_new(size_t size, size_t min_block) {
+    BuddyAllocator *allocator = mmap(NULL, sizeof(BuddyAllocator), PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+    buddy_init(allocator, size, min_block);
+    return allocator;
+}
+
 void buddy_init(BuddyAllocator *allocator, size_t size, size_t min_block) {
     size_t number_of_blocks = size / min_block;
     buddy_alloc->base = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
-    buddy_alloc->bitmap = mmap(NULL, sizeof(BitmapTree), PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
-    bitmaptree_init(buddy_alloc->bitmap, number_of_blocks / 8);
+    buddy_alloc->bitmap = bitmaptree_new(number_of_blocks / 8, min_block);
     buddy_alloc->size = size;
     buddy_alloc->min_block = min_block;
 }

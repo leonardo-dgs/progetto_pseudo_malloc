@@ -7,6 +7,8 @@ typedef struct {
     size_t min_block;
 } BuddyAllocator;
 
+BuddyAllocator* buddy_new(size_t size, size_t min_block);
+
 void buddy_init(BuddyAllocator *allocator, size_t size, size_t min_block);
 
 void *buddy_alloc(size_t size);

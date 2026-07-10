@@ -2,6 +2,12 @@
 
 #include "bitmap_tree.h"
 
+BitmapTree* bitmaptree_new(size_t size, size_t min_block) {
+    BitmapTree* bitmap_tree = mmap(NULL, sizeof(BitmapTree), PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);;
+    bitmaptree_init(bitmap_tree, size, min_block);
+    return bitmap_tree;
+}
+
 void bitmaptree_init(BitmapTree *tree, size_t size, size_t min_block) {
     tree->bitmap_used = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
     tree->bitmap_split = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
