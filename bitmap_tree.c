@@ -49,3 +49,22 @@ int bitmaptree_right_child(BitmapTree *tree, int index) {
 int bitmaptree_buddy(BitmapTree *tree, int index) {
     return (i % 2 == 0) ? index - 1 : index + 1;
 }
+
+int bitmaptree_size_to_order(BitmapTree *tree, size_t size) {
+    return (int) ceil(log2(size / tree->min_block));
+}
+
+int bitmaptree_index_to_order(BitmapTree *tree, size_t index) {
+    int number_of_blocks = tree->size * 8;
+    int max_order = (int) floor(log2(number_of_blocks));
+    int level = (int) floor(log2(index + 1));
+    return max_order - level;
+}
+
+int bitmaptree_is_leaf(BitmapTree *tree, int index) {
+    return index_to_order(allocator, index) == 0;
+}
+
+int bitmaptree_is_root(int index) {
+    return index == 0;
+}

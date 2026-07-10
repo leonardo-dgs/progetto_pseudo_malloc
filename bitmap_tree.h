@@ -2,6 +2,7 @@ typedef struct {
     char *bitmap_used;
     char *bitmap_split;
     size_t size;
+    size_t min_block;
 } BitmapTree;
 
 void bitmaptree_init(BitmapTree *tree, size_t size, size_t min_block);
@@ -19,3 +20,8 @@ int bitmaptree_left_child(BitmapTree *tree, int index);
 int bitmaptree_right_child(BitmapTree *tree, int index);
 
 int bitmaptree_buddy(BitmapTree *tree, int index);
+
+int bitmaptree_size_to_order(BitmapTree *tree, size_t size);
+int bitmaptree_index_to_order(BitmapTree *tree, size_t index);
+int bitmaptree_is_leaf(BitmapTree *tree, int index);
+int bitmaptree_is_root(int index);

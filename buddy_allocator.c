@@ -4,9 +4,8 @@
 #include "buddy_allocator.h"
 
 int pointer_to_index(BuddyAllocator *allocator, void* ptr);
-int size_to_order(BuddyAllocator *allocator, size_t size);
-int index_to_order(BuddyAllocator *allocator, size_t index);
 int buddy_alloc_r(BuddyAllocator *allocator, int node_index, int target_order);
+void buddy_free_r(BuddyAllocator *allocator, int index);
 
 void buddy_init(BuddyAllocator *allocator, size_t size, size_t min_block) {
     size_t number_of_blocks = size / min_block;
@@ -18,7 +17,7 @@ void buddy_init(BuddyAllocator *allocator, size_t size, size_t min_block) {
 }
 
 void *buddy_alloc(BuddyAllocator *allocator, size_t size) {
-    int target_order = size_to_order(allocator, size);
+    int target_order = bitmaptree_size_to_order(allocator->bitmap, size);
     int index = buddy_alloc_r(allocator, 0, target_order);
     if (index < 0)
         return NULL;
@@ -26,17 +25,11 @@ void *buddy_alloc(BuddyAllocator *allocator, size_t size) {
 }
 
 void buddy_free(BuddyAllocator *allocator, void* ptr) {
-    int index = pointer_to_index(allocator, ptr);
-    bitmaptree_mark_free(allocator->bitmap, index);
-    int buddy_index = bitmaptree_buddy(allocator->bitmap, index);
-    if (bitmaptree_is_free(allocator->bitmap, buddy_index)) {
-        int parent_index = bitmaptree_parent(allocator->bitmap, index);
-        bitmaptree_mark_free(parent_index);
-    }
+    buddy_free_r(allocator, pointer_to_index(allocator, ptr));
 }
 
 int buddy_alloc_r(BuddyAllocator *allocator, int node_index, int target_order) {
-    int order = index_to_order(allocator, node_index);
+    int order = bitmaptree_index_to_order(allocator->bitmap, node_index);
     if (order < target_order)
         return -1;
     if (!bitmaptree_is_free(allocator->bitmap, node_index) && !bitmaptree_is_split(allocator->bitmap, node_index))
@@ -63,16 +56,17 @@ int buddy_alloc_r(BuddyAllocator *allocator, int node_index, int target_order) {
     return -1;
 }
 
+void buddy_free_r(BuddyAllocator *allocator, int index) {
+    bitmaptree_mark_free(allocator->bitmap, index);
+    if (!bitmaptree_is_root(index)) {
+        int buddy_index = bitmaptree_buddy(allocator->bitmap, index);
+        if (bitmaptree_is_free(allocator->bitmap, buddy_index)) {
+            int parent_index = bitmaptree_parent(allocator->bitmap, index);
+            buddy_free_r(allocator, parent_index);
+        }
+    }
+}
+
 int pointer_to_index(BuddyAllocator *allocator, void* ptr) {
     return ((char*) ptr - (char*) allocator->base) / allocator->min_block;
-}
-
-int size_to_order(BuddyAllocator *allocator, size_t size) {
-    return (int) ceil(log2(size / allocator->min_block));
-}
-
-int index_to_order(BuddyAllocator *allocator, size_t index) {
-    int int max_order = allocator->size / allocator->min_block;
-    int level = (int) floor(log2(index + 1));
-    return max_order - level;
 }
