@@ -3,17 +3,36 @@
 
 #include "buddy_allocator.h"
 
-int pointer_to_index(BuddyAllocator *allocator, void* ptr);
+static BuddyError last_error;
+
 int buddy_alloc_r(BuddyAllocator *allocator, int node_index, int target_order);
 void buddy_free_r(BuddyAllocator *allocator, int index);
+int pointer_to_index(BuddyAllocator *allocator, void* ptr);
+int is_power_of_two(size_t x);
 
 BuddyAllocator* buddy_new(size_t size, size_t min_block) {
+    if (min_block > size) {
+        fprintf(stderr, "buddy_new: min_block must be minor than size\n");
+        return;
+    }
+    if (!is_power_of_two(size) || !is_power_of_two(min_block)) {
+        fprintf(stderr, "buddy_new: size and min_block must be power of two\n");
+        return;
+    }
     BuddyAllocator *allocator = mmap(NULL, sizeof(BuddyAllocator), PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
     buddy_init(allocator, size, min_block);
     return allocator;
 }
 
 void buddy_init(BuddyAllocator *allocator, size_t size, size_t min_block) {
+    if (min_block > size) {
+        fprintf(stderr, "buddy_init: min_block must be minor than size\n");
+        return;
+    }
+    if (!is_power_of_two(size) || !is_power_of_two(min_block)) {
+        fprintf(stderr, "buddy_init: size and min_block must be power of two\n");
+        return;
+    }
     size_t number_of_blocks = size / min_block;
     buddy_alloc->base = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
     buddy_alloc->bitmap = bitmaptree_new(number_of_blocks / 8, min_block);
@@ -31,6 +50,12 @@ void *buddy_alloc(BuddyAllocator *allocator, size_t size) {
 
 void buddy_free(BuddyAllocator *allocator, void* ptr) {
     buddy_free_r(allocator, pointer_to_index(allocator, ptr));
+}
+
+int buddy_is_valid_pointer(BuddyAllocator *allocator, void* ptr) {
+    if (allocator == NULL || ptr == NULL)
+        return 0;
+    return ptr >= allocator->base && ptr < allocator->base + allocator->size;
 }
 
 int buddy_alloc_r(BuddyAllocator *allocator, int node_index, int target_order) {
@@ -74,4 +99,8 @@ void buddy_free_r(BuddyAllocator *allocator, int index) {
 
 int pointer_to_index(BuddyAllocator *allocator, void* ptr) {
     return ((char*) ptr - (char*) allocator->base) / allocator->min_block;
+}
+
+int is_power_of_two(size_t x) {
+    return x != 0 && (x & (x - 1)) == 0;
 }
