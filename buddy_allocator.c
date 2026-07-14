@@ -3,8 +3,6 @@
 
 #include "buddy_allocator.h"
 
-static BuddyError last_error;
-
 int buddy_alloc_r(BuddyAllocator *allocator, int node_index, int target_order);
 void buddy_free_r(BuddyAllocator *allocator, int index);
 int pointer_to_index(BuddyAllocator *allocator, void* ptr);

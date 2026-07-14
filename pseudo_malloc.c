@@ -2,13 +2,24 @@
 #include <unistd.h>
 #include <stdio.h>
 
+#include "buddy_allocator.h"
+#include "mmap_allocator.h"
+
 #include "pseudo_malloc.h"
 
+typedef enum {
+    ALLOCATOR_BUDDY,
+    ALLOCATOR_MMAP
+} AllocatorType;
+
 typedef struct {
+    AllocatorType type;
     size_t size;
 } BlockHeader;
 
 static BuddyAllocator *buddy_allocator;
+
+void set_header(void *ptr, AllocatorType type, size_t size);
 
 void *pseudo_malloc(size_t size) {
     if (size <= 0) {
@@ -18,20 +29,23 @@ void *pseudo_malloc(size_t size) {
     if (buddy_allocator == NULL) {
         buddy_allocator = buddy_new(BUDDY_SIZE, BUDDY_BLOCK);
     }
+
     size_t page_size = sysconf(_SC_PAGESIZE);
+    void *alloc = NULL;
     if (size < page_size / 4) {
-        void *alloc = buddy_alloc(buddy_allocator, size);
-        if (alloc == NULL) {
-            fprintf(stderr, "pseudo_malloc: not enough memory\n");
-        }
-        return alloc;
+        alloc = buddy_alloc(buddy_allocator, size + sizeof(BlockHeader));
+        set_header(alloc, ALLOCATOR_BUDDY, size);
     }
-    else {
-        void *alloc = mmap(NULL, sizeof(BlockHeader) + size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
-        BlockHeader *header = (BlockHeader *) alloc;
-        header->size = size;
-        return header + 1;
+    if (alloc == NULL) {
+        alloc = mmap_alloc(sizeof(BlockHeader) + size);
+        set_header(alloc, ALLOCATOR_MMAP, size);
     }
+
+    if (alloc == NULL) {
+        fprintf(stderr, "pseudo_malloc: not enough memory\n");
+        return NULL;
+    }
+    return alloc + sizeof(BlockHeader);
 }
 
 void pseudo_free(void *pointer) {
@@ -39,11 +53,20 @@ void pseudo_free(void *pointer) {
         fprintf(stderr, "pseudo_free: null pointer supplied\n");
         return;
     }
-    if (buddy_is_valid_pointer(allocator, pointer)) {
+
+    BlockHeader *block_header = (BlockHeader *) (pointer - sizeof(BlockHeader));
+    if (block_header->type == ALLOCATOR_BUDDY) {
         buddy_free(buddy_allocator, pointer);
     }
     else {
-        BlockHeader *header = ((BlockHeader *) pointer) - 1;
-        munmap(header, sizeof(BlockHeader) + header->size);
+        mmap_free(pointer, sizeof(BlockHeader) + header->size);
     }
+}
+
+void set_header(void *ptr, AllocatorType type, size_t size) {
+    if (ptr == NULL)
+        return;
+    BlockHeader *block_header = (BlockHeader *) ptr;
+    block_header->type = type;
+    block_header->size = size;
 }

@@ -1,5 +1,3 @@
-#include "buddy_allocator.h"
-
 #define BUDDY_SIZE (1024 * 1024)
 #define BUDDY_BLOCK 16
 
