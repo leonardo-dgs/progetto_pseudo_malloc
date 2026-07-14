@@ -1,3 +1,6 @@
+#ifndef BUDDY_ALLOCATOR_H
+#define BUDDY_ALLOCATOR_H
+
 #include "bitmap_tree.h"
 
 typedef struct {
@@ -16,3 +19,5 @@ void *buddy_alloc(size_t size);
 void buddy_free(void* ptr);
 
 int buddy_is_valid_pointer(BuddyAllocator *allocator, void* ptr);
+
+#endif

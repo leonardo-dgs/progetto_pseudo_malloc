@@ -1,3 +1,6 @@
+#ifndef BITMAP_TREE_H
+#define BITMAP_TREE_H
+
 typedef struct {
     char *bitmap_used;
     char *bitmap_split;
@@ -27,3 +30,5 @@ int bitmaptree_size_to_order(BitmapTree *tree, size_t size);
 int bitmaptree_index_to_order(BitmapTree *tree, size_t index);
 int bitmaptree_is_leaf(BitmapTree *tree, int index);
 int bitmaptree_is_root(int index);
+
+#endif
