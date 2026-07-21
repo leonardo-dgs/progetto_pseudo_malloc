@@ -28,6 +28,10 @@ void *pseudo_malloc(size_t size) {
     }
     if (buddy_allocator == NULL) {
         buddy_allocator = buddy_new(BUDDY_SIZE, BUDDY_BLOCK);
+        if (buddy_allocator == NULL) {
+            fprintf("pseudo_free: cannot initialize buddy_allocator\n");
+            return NULL;
+        }
     }
 
     size_t page_size = sysconf(_SC_PAGESIZE);

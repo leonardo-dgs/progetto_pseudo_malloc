@@ -18,6 +18,10 @@ BuddyAllocator* buddy_new(size_t size, size_t min_block) {
         return;
     }
     BuddyAllocator *allocator = mmap(NULL, sizeof(BuddyAllocator), PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+    if (allocator == MAP_FAILED) {
+        fprintf(stderr, "buddy_new: mmap failed\n");
+        return NULL;
+    }
     buddy_init(allocator, size, min_block);
     return allocator;
 }
