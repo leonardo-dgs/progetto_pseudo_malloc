@@ -8,6 +8,12 @@ BitmapTree* bitmaptree_new(size_t size, size_t min_block) {
     return bitmap_tree;
 }
 
+void bitmaptree_delete(BitmapTree* tree) {
+    munmap(tree->bitmap_used, size);
+    munmap(tree->bitmap_split, size);
+    munmap(tree, sizeof(BitmapTree));
+}
+
 void bitmaptree_init(BitmapTree *tree, size_t size, size_t min_block) {
     tree->bitmap_used = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
     tree->bitmap_split = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);

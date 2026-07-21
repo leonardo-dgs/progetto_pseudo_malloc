@@ -42,6 +42,12 @@ void buddy_init(BuddyAllocator *allocator, size_t size, size_t min_block) {
     buddy_alloc->min_block = min_block;
 }
 
+void buddy_delete(BuddyAllocator *allocator) {
+    bitmaptree_delete(allocator->bitmap);
+    munmap(allocator->base, allocator->size);
+    munmap(allocator, sizeof(BuddyAllocator));
+}
+
 void *buddy_alloc(BuddyAllocator *allocator, size_t size) {
     int target_order = bitmaptree_size_to_order(allocator->bitmap, size);
     int index = buddy_alloc_r(allocator, 0, target_order);

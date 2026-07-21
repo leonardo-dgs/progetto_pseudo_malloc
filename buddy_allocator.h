@@ -11,6 +11,7 @@ typedef struct {
 } BuddyAllocator;
 
 BuddyAllocator* buddy_new(size_t size, size_t min_block);
+void buddy_delete(BuddyAllocator *allocator);
 
 void buddy_init(BuddyAllocator *allocator, size_t size, size_t min_block);
 

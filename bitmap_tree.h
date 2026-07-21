@@ -9,6 +9,7 @@ typedef struct {
 } BitmapTree;
 
 BitmapTree* bitmaptree_new(size_t size, size_t min_block);
+void bitmaptree_delete(BitmapTree* tree);
 
 void bitmaptree_init(BitmapTree *tree, size_t size, size_t min_block);
 
