@@ -9,6 +9,10 @@ int pointer_to_index(BuddyAllocator *allocator, void* ptr);
 int is_power_of_two(size_t x);
 
 BuddyAllocator* buddy_new(size_t size, size_t min_block) {
+    if (size <= 0 || min_block <= 0) {
+        fprintf(stderr, "buddy_new: size and min_block must be greater than zero\n");
+        return;
+    }
     if (min_block > size) {
         fprintf(stderr, "buddy_new: min_block must be minor than size\n");
         return;
@@ -27,6 +31,14 @@ BuddyAllocator* buddy_new(size_t size, size_t min_block) {
 }
 
 void buddy_init(BuddyAllocator *allocator, size_t size, size_t min_block) {
+    if (allocator == NULL) {
+        fprintf(stderr, "buddy_alloc: the supplied parameter BuddyAllocator is null\n");
+        return NULL;
+    }
+    if (size <= 0 || min_block <= 0) {
+        fprintf(stderr, "buddy_new: size and min_block must be greater than zero\n");
+        return;
+    }
     if (min_block > size) {
         fprintf(stderr, "buddy_init: min_block must be minor than size\n");
         return;
@@ -49,6 +61,14 @@ void buddy_delete(BuddyAllocator *allocator) {
 }
 
 void *buddy_alloc(BuddyAllocator *allocator, size_t size) {
+    if (allocator == NULL) {
+        fprintf(stderr, "buddy_alloc: the supplied parameter BuddyAllocator is null\n");
+        return NULL;
+    }
+    if (size < 0) {
+        fprintf(stderr, "buddy_alloc: invalid size supplied\n");
+        return NULL;
+    }
     int target_order = bitmaptree_size_to_order(allocator->bitmap, size);
     int index = buddy_alloc_r(allocator, 0, target_order);
     if (index < 0)
