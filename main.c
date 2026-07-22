@@ -6,11 +6,12 @@
 int main(int argc, char** argv) {
     if (argc < 2) {
         printf("You need to supply an argument.\n");
+        return 0;
     }
     char* cmd = argv[1];
-    if (strcmp(cmd, "test")) {
+    if (strcmp(cmd, "test") == 0) {
         run_tests();
-        return;
+        return 0;
     }
-    printf("Unknown command.\n");
+    printf("Unknown argument.\n");
 }

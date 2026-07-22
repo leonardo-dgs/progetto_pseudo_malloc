@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <sys/mman.h>
 
 #include "mmap_allocator.h"
 
@@ -10,5 +11,5 @@ void *mmap_alloc(size_t size) {
 }
 
 void mmap_free(void *ptr, size_t size) {
-    munmap(pointer, size);
+    munmap(ptr, size);
 }

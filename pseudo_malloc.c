@@ -29,7 +29,7 @@ void *pseudo_malloc(size_t size) {
     if (buddy_allocator == NULL) {
         buddy_allocator = buddy_new(BUDDY_SIZE, BUDDY_BLOCK);
         if (buddy_allocator == NULL) {
-            fprintf("pseudo_free: cannot initialize buddy_allocator\n");
+            fprintf(stderr, "pseudo_free: cannot initialize buddy_allocator\n");
             return NULL;
         }
     }
@@ -63,7 +63,7 @@ void pseudo_free(void *pointer) {
         buddy_free(buddy_allocator, pointer);
     }
     else {
-        mmap_free(pointer, sizeof(BlockHeader) + header->size);
+        mmap_free(pointer, sizeof(BlockHeader) + block_header->size);
     }
 }
 

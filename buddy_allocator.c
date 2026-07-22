@@ -1,5 +1,6 @@
 #include <stdlib.h>
-#include <math.h>
+#include <stdio.h>
+#include <sys/mman.h>
 
 #include "buddy_allocator.h"
 
@@ -11,15 +12,15 @@ int is_power_of_two(size_t x);
 BuddyAllocator* buddy_new(size_t size, size_t min_block) {
     if (size <= 0 || min_block <= 0) {
         fprintf(stderr, "buddy_new: size and min_block must be greater than zero\n");
-        return;
+        return NULL;
     }
     if (min_block > size) {
         fprintf(stderr, "buddy_new: min_block must be minor than size\n");
-        return;
+        return NULL;
     }
     if (!is_power_of_two(size) || !is_power_of_two(min_block)) {
         fprintf(stderr, "buddy_new: size and min_block must be power of two\n");
-        return;
+        return NULL;
     }
     BuddyAllocator *allocator = mmap(NULL, sizeof(BuddyAllocator), PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
     if (allocator == MAP_FAILED) {
@@ -33,7 +34,7 @@ BuddyAllocator* buddy_new(size_t size, size_t min_block) {
 void buddy_init(BuddyAllocator *allocator, size_t size, size_t min_block) {
     if (allocator == NULL) {
         fprintf(stderr, "buddy_alloc: the supplied parameter BuddyAllocator is null\n");
-        return NULL;
+        return;
     }
     if (size <= 0 || min_block <= 0) {
         fprintf(stderr, "buddy_new: size and min_block must be greater than zero\n");
@@ -48,10 +49,10 @@ void buddy_init(BuddyAllocator *allocator, size_t size, size_t min_block) {
         return;
     }
     size_t number_of_blocks = size / min_block;
-    buddy_alloc->base = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
-    buddy_alloc->bitmap = bitmaptree_new(number_of_blocks / 8, min_block);
-    buddy_alloc->size = size;
-    buddy_alloc->min_block = min_block;
+    allocator->base = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+    allocator->bitmap = bitmaptree_new(number_of_blocks / 8, min_block);
+    allocator->size = size;
+    allocator->min_block = min_block;
 }
 
 void buddy_delete(BuddyAllocator *allocator) {
@@ -65,7 +66,7 @@ void *buddy_alloc(BuddyAllocator *allocator, size_t size) {
         fprintf(stderr, "buddy_alloc: the supplied parameter BuddyAllocator is null\n");
         return NULL;
     }
-    if (size < 0) {
+    if (size <= 0) {
         fprintf(stderr, "buddy_alloc: invalid size supplied\n");
         return NULL;
     }
@@ -77,6 +78,14 @@ void *buddy_alloc(BuddyAllocator *allocator, size_t size) {
 }
 
 void buddy_free(BuddyAllocator *allocator, void* ptr) {
+    if (allocator == NULL) {
+        fprintf(stderr, "buddy_alloc: the supplied parameter BuddyAllocator is null\n");
+        return;
+    }
+    if (ptr == NULL) {
+        fprintf(stderr, "buddy_free: null pointer supplied\n");
+        return;
+    }
     buddy_free_r(allocator, pointer_to_index(allocator, ptr));
 }
 

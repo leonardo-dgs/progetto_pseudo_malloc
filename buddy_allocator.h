@@ -15,9 +15,9 @@ void buddy_delete(BuddyAllocator *allocator);
 
 void buddy_init(BuddyAllocator *allocator, size_t size, size_t min_block);
 
-void *buddy_alloc(size_t size);
+void *buddy_alloc(BuddyAllocator *allocator, size_t size);
 
-void buddy_free(void* ptr);
+void buddy_free(BuddyAllocator *allocator, void* ptr);
 
 int buddy_is_valid_pointer(BuddyAllocator *allocator, void* ptr);
 
