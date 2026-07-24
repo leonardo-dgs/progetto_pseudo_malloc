@@ -10,6 +10,7 @@ void buddy_free_r(BuddyAllocator *allocator, size_t index);
 int pointer_to_index(BuddyAllocator *allocator, void* ptr);
 void* index_to_pointer(BuddyAllocator *allocator, size_t index);
 int is_power_of_two(size_t x);
+size_t next_power_of_two(size_t x);
 
 BuddyAllocator* buddy_new(size_t size, size_t min_block) {
     if (size <= 0 || min_block <= 0) {
@@ -20,10 +21,8 @@ BuddyAllocator* buddy_new(size_t size, size_t min_block) {
         fprintf(stderr, "buddy_new: min_block must be minor than size\n");
         return NULL;
     }
-    if (!is_power_of_two(size) || !is_power_of_two(min_block)) {
-        fprintf(stderr, "buddy_new: size and min_block must be power of two\n");
-        return NULL;
-    }
+    size = next_power_of_two(size);
+    min_block = next_power_of_two(min_block);
     BuddyAllocator *allocator = mmap(NULL, sizeof(BuddyAllocator), PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
     if (allocator == MAP_FAILED) {
         fprintf(stderr, "buddy_new: mmap failed\n");
@@ -46,10 +45,8 @@ void buddy_init(BuddyAllocator *allocator, size_t size, size_t min_block) {
         fprintf(stderr, "buddy_init: min_block must be minor than size\n");
         return;
     }
-    if (!is_power_of_two(size) || !is_power_of_two(min_block)) {
-        fprintf(stderr, "buddy_init: size and min_block must be power of two\n");
-        return;
-    }
+    size = next_power_of_two(size);
+    min_block = next_power_of_two(min_block);
     size_t number_of_blocks = size / min_block;
     size_t bitmap_size = ceil((double) (2 * number_of_blocks - 1) / 8);
     allocator->base = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
@@ -161,4 +158,14 @@ void* index_to_pointer(BuddyAllocator *allocator, size_t index) {
 
 int is_power_of_two(size_t x) {
     return x != 0 && (x & (x - 1)) == 0;
+}
+
+size_t next_power_of_two(size_t x) {
+    if (x == 0)
+        return 1;
+
+    size_t power = 1;
+    while (power < x)
+        power <<= 1;
+    return power;
 }

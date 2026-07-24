@@ -103,4 +103,13 @@ void run_tests() {
     void *huge = buddy_alloc(buddy_allocator, 512 * 512);
     assert(buddy_is_valid_pointer(buddy_allocator, huge));
     buddy_free(buddy_allocator, huge);
+
+    BuddyAllocator* buddy_allocator2 = buddy_new(512 * 512 - 134, 21);
+    assert(buddy_allocator2 != NULL);
+    assert(buddy_allocator2->size == 512 * 512);
+    assert(buddy_allocator2->min_block == 32);
+
+    void *b5 = buddy_alloc(buddy_allocator2, 28);
+    assert(buddy_is_valid_pointer(buddy_allocator2, b5));
+    buddy_free(buddy_allocator2, b5);
 }
