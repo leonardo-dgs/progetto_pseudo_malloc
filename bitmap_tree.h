@@ -29,6 +29,8 @@ int bitmaptree_buddy(BitmapTree *tree, size_t index);
 
 int bitmaptree_size_to_order(BitmapTree *tree, size_t size);
 int bitmaptree_index_to_order(BitmapTree *tree, size_t index);
+int bitmaptree_index_to_level(BitmapTree *tree, size_t index);
+
 int bitmaptree_is_leaf(BitmapTree *tree, size_t index);
 int bitmaptree_is_root(size_t index);
 

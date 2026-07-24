@@ -12,7 +12,7 @@ pseudo_malloc:	main.c bitmap_tree.c buddy_allocator.c mmap_allocator.c pseudo_ma
 
 debug:
 	make clean
-	make COPTS="-Wall -Wextra -g"
+	make CCOPTS="-Wall -Wextra -g"
 
 clean:
 	rm -rf *.o *~ $(BINS)

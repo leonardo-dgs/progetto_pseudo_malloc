@@ -97,5 +97,10 @@ void run_tests() {
 
     void *big = buddy_alloc(buddy_allocator, 256 * 256);
     assert(buddy_is_valid_pointer(buddy_allocator, big));
+
     buddy_free(buddy_allocator, big);
+
+    void *huge = buddy_alloc(buddy_allocator, 512 * 512);
+    assert(buddy_is_valid_pointer(buddy_allocator, huge));
+    buddy_free(buddy_allocator, huge);
 }
