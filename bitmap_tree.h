@@ -36,6 +36,7 @@ size_t bitmaptree_number_of_leaves(BitmapTree *tree);
 size_t bitmaptree_size_to_order(BitmapTree *tree, size_t size);
 size_t bitmaptree_index_to_order(BitmapTree *tree, size_t index);
 size_t bitmaptree_index_to_level(size_t index);
+size_t bitmaptree_index_to_size(BitmapTree *tree, size_t index);
 
 bool bitmaptree_is_leaf(BitmapTree *tree, size_t index);
 bool bitmaptree_is_root(size_t index);

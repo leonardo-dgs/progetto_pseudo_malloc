@@ -92,6 +92,11 @@ size_t bitmaptree_index_to_level(size_t index) {
     return floor_log2(index + 1);
 }
 
+size_t bitmaptree_index_to_size(BitmapTree *tree, size_t index) {
+    size_t order = bitmaptree_index_to_order(tree, index);
+    return tree->min_block << order;
+}
+
 bool bitmaptree_is_leaf(BitmapTree *tree, size_t index) {
     return bitmaptree_index_to_order(tree, index) == 0;
 }
