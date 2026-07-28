@@ -70,14 +70,20 @@ size_t bitmaptree_buddy(size_t index) {
     return (index % 2 == 0) ? index - 1 : index + 1;
 }
 
+size_t bitmaptree_number_of_nodes(BitmapTree *tree) {
+    return tree->size * CHAR_BIT - 1;
+}
+
+size_t bitmaptree_number_of_leaves(BitmapTree *tree) {
+    return (bitmaptree_number_of_nodes(tree) + 1) / 2;
+}
+
 size_t bitmaptree_size_to_order(BitmapTree *tree, size_t size) {
     return ceil_log2(ceil_div(size, tree->min_block));
 }
 
 size_t bitmaptree_index_to_order(BitmapTree *tree, size_t index) {
-    size_t number_of_nodes = tree->size * CHAR_BIT;
-    size_t number_of_blocks = (number_of_nodes + 1) / 2;
-    size_t max_order = floor_log2(number_of_blocks);
+    size_t max_order = floor_log2(bitmaptree_number_of_leaves(tree));
     size_t level = bitmaptree_index_to_level(index);
     return max_order - level;
 }

@@ -30,6 +30,9 @@ size_t bitmaptree_right_child(size_t index);
 
 size_t bitmaptree_buddy(size_t index);
 
+size_t bitmaptree_number_of_nodes(BitmapTree *tree);
+size_t bitmaptree_number_of_leaves(BitmapTree *tree);
+
 size_t bitmaptree_size_to_order(BitmapTree *tree, size_t size);
 size_t bitmaptree_index_to_order(BitmapTree *tree, size_t index);
 size_t bitmaptree_index_to_level(size_t index);
