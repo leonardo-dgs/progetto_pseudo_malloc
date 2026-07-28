@@ -5,6 +5,7 @@
 #include "pseudo_malloc.h"
 #include "buddy_allocator.h"
 #include "bitmap_tree.h"
+
 #include "tests.h"
 
 void run_tests() {

@@ -8,7 +8,7 @@ int main(int argc, char** argv) {
         printf("You need to supply an argument.\n");
         return 0;
     }
-    char* cmd = argv[1];
+    const char *cmd = argv[1];
     if (strcmp(cmd, "test") == 0) {
         run_tests();
         return 0;

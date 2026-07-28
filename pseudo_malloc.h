@@ -1,6 +1,8 @@
 #ifndef PSEUDO_MALLOC_H
 #define PSEUDO_MALLOC_H
 
+#include <stddef.h>
+
 #define BUDDY_SIZE (1024 * 1024)
 #define BUDDY_BLOCK 16
 

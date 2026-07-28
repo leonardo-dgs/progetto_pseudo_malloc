@@ -1,11 +1,12 @@
-#include <stdlib.h>
+
 #include <string.h>
-#include <math.h>
 #include <sys/mman.h>
+#include <limits.h>
 
 #include "bitmap_tree.h"
+#include "intmath.h"
 
-int get_bit(unsigned char *base, size_t bit_index);
+bool get_bit(unsigned char *base, size_t bit_index);
 void set_bit(unsigned char *base, size_t bit_index);
 void clear_bit(unsigned char *base, size_t bit_index);
 
@@ -30,7 +31,7 @@ void bitmaptree_init(BitmapTree *tree, size_t size, size_t min_block) {
     tree->min_block = min_block;
 }
 
-int bitmaptree_is_split(BitmapTree *tree, size_t index) {
+bool bitmaptree_is_split(BitmapTree *tree, size_t index) {
     return get_bit(tree->bitmap_split, index);
 }
 
@@ -39,7 +40,7 @@ void bitmaptree_mark_split(BitmapTree *tree, size_t index) {
     set_bit(tree->bitmap_split, index);
 }
 
-int bitmaptree_is_free(BitmapTree *tree, size_t index) {
+bool bitmaptree_is_free(BitmapTree *tree, size_t index) {
     return !get_bit(tree->bitmap_used, index) && !get_bit(tree->bitmap_split, index);
 }
 
@@ -53,64 +54,63 @@ void bitmaptree_mark_free(BitmapTree *tree, size_t index) {
     clear_bit(tree->bitmap_split, index);
 }
 
-int bitmaptree_parent(BitmapTree *tree, size_t index) {
+size_t bitmaptree_parent(size_t index) {
     return (index - 1) / 2;
 }
 
-int bitmaptree_left_child(BitmapTree *tree, size_t index) {
+size_t bitmaptree_left_child(size_t index) {
     return 2 * index + 1;
 }
 
-int bitmaptree_right_child(BitmapTree *tree, size_t index) {
+size_t bitmaptree_right_child(size_t index) {
     return 2 * index + 2;
 }
 
-int bitmaptree_buddy(BitmapTree *tree, size_t index) {
+size_t bitmaptree_buddy(size_t index) {
     return (index % 2 == 0) ? index - 1 : index + 1;
 }
 
-int bitmaptree_size_to_order(BitmapTree *tree, size_t size) {
-    int result = ceil(log2(ceil((double) size / (double) tree->min_block)));
-    return result;
+size_t bitmaptree_size_to_order(BitmapTree *tree, size_t size) {
+    return ceil_log2(ceil_div(size, tree->min_block));
 }
 
-int bitmaptree_index_to_order(BitmapTree *tree, size_t index) {
-    int number_of_nodes = tree->size * 8;
-    int number_of_blocks = (number_of_nodes + 1) / 2;
-    int max_order = (int) floor(log2(number_of_blocks));
-    int level = bitmaptree_index_to_level(tree, index);
+size_t bitmaptree_index_to_order(BitmapTree *tree, size_t index) {
+    size_t number_of_nodes = tree->size * CHAR_BIT;
+    size_t number_of_blocks = (number_of_nodes + 1) / 2;
+    size_t max_order = floor_log2(number_of_blocks);
+    size_t level = bitmaptree_index_to_level(index);
     return max_order - level;
 }
 
-int bitmaptree_index_to_level(BitmapTree *tree, size_t index) {
-    return floor(log2(index + 1));
+size_t bitmaptree_index_to_level(size_t index) {
+    return floor_log2(index + 1);
 }
 
-int bitmaptree_is_leaf(BitmapTree *tree, size_t index) {
+bool bitmaptree_is_leaf(BitmapTree *tree, size_t index) {
     return bitmaptree_index_to_order(tree, index) == 0;
 }
 
-int bitmaptree_is_root(size_t index) {
+bool bitmaptree_is_root(size_t index) {
     return index == 0;
 }
 
-int get_bit(unsigned char *base, size_t bit_index) {
-    size_t byte_index = bit_index / 8;
-    size_t offset = bit_index % 8;
+bool get_bit(unsigned char *base, size_t bit_index) {
+    size_t byte_index = bit_index / CHAR_BIT;
+    size_t offset = bit_index % CHAR_BIT;
     unsigned char bit_mask = 1 << offset;
     return (base[byte_index] & bit_mask) != 0;
 }
 
 void set_bit(unsigned char *base, size_t bit_index) {
-    size_t byte_index = bit_index / 8;
-    size_t offset = bit_index % 8;
+    size_t byte_index = bit_index / CHAR_BIT;
+    size_t offset = bit_index % CHAR_BIT;
     unsigned char bit_mask = 1 << offset;
     base[byte_index] |= bit_mask;
 }
 
 void clear_bit(unsigned char *base, size_t bit_index) {
-    size_t byte_index = bit_index / 8;
-    size_t offset = bit_index % 8;
+    size_t byte_index = bit_index / CHAR_BIT;
+    size_t offset = bit_index % CHAR_BIT;
     unsigned char bit_mask = ~(1 << offset);
     base[byte_index] &= bit_mask;
 }
