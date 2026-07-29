@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <sys/mman.h>
 #include <limits.h>
+#include <string.h>
 
 #include "intmath.h"
 
@@ -8,6 +9,7 @@
 
 ptrdiff_t buddy_alloc_r(BuddyAllocator *allocator, size_t node_index, size_t target_order);
 void buddy_free_r(BuddyAllocator *allocator, size_t index);
+void buddy_dump_tree_r(BuddyAllocator *allocator, size_t index, size_t level);
 size_t pointer_to_index(BuddyAllocator *allocator, void* ptr);
 void* index_to_pointer(BuddyAllocator *allocator, size_t index);
 
@@ -52,6 +54,7 @@ void buddy_init(BuddyAllocator *allocator, size_t size, size_t min_block) {
     allocator->bitmap = bitmaptree_new(bitmap_size, min_block);
     allocator->size = size;
     allocator->min_block = min_block;
+    memset(&allocator->stats, 0, sizeof(BuddyStats));
 }
 
 void buddy_delete(BuddyAllocator *allocator) {
@@ -71,8 +74,12 @@ void *buddy_alloc(BuddyAllocator *allocator, size_t size) {
     }
     size_t target_order = bitmaptree_size_to_order(allocator->bitmap, size);
     ptrdiff_t index = buddy_alloc_r(allocator, 0, target_order);
-    if (index < 0)
+    if (index < 0) {
+        allocator->stats.failed_allocations++;
         return NULL;
+    }
+    allocator->stats.allocations++;
+    allocator->stats.used_memory += bitmaptree_index_to_size(allocator->bitmap, index);
     return index_to_pointer(allocator, index);
 }
 
@@ -81,7 +88,36 @@ void buddy_free(BuddyAllocator *allocator, void* ptr) {
         fprintf(stderr, "buddy_free: invalid parameters supplied\n");
         return;
     }
-    buddy_free_r(allocator, pointer_to_index(allocator, ptr));
+    size_t index = pointer_to_index(allocator, ptr);
+    allocator->stats.deallocations++;
+    allocator->stats.used_memory -= bitmaptree_index_to_size(allocator->bitmap, index);
+    buddy_free_r(allocator, index);
+}
+
+void buddy_dump_tree(BuddyAllocator *allocator) {
+    if (allocator == NULL) {
+        fprintf(stderr, "buddy_dump: the supplied parameter BuddyAllocator is null\n");
+        return;
+    }
+    buddy_dump_tree_r(allocator, 0, 0);
+}
+
+void buddy_print_stats(BuddyAllocator *allocator) {
+    if (allocator == NULL) {
+        fprintf(stderr, "buddy_print_stats: the supplied parameter BuddyAllocator is null\n");
+        return;
+    }
+    printf("Buddy Allocator Stats:\n");
+    printf("Total memory: %zu bytes\n", allocator->size);
+    printf("Used memory: %zu bytes\n", allocator->stats.used_memory);
+    printf("Free memory: %zu bytes\n", allocator->size - allocator->stats.used_memory);
+    printf("Memory utilization: %.2f%%\n", (double) allocator->stats.used_memory / allocator->size * 100);
+    printf("Minimum block size: %zu bytes\n", allocator->min_block);
+    printf("Allocations: %zu\n", allocator->stats.allocations);
+    printf("Deallocations: %zu\n", allocator->stats.deallocations);
+    printf("Failed allocations: %zu\n", allocator->stats.failed_allocations);
+    printf("Splits: %zu\n", allocator->stats.splits);
+    printf("Merges: %zu\n", allocator->stats.merges);
 }
 
 bool buddy_is_valid_pointer(BuddyAllocator *allocator, void* ptr) {
@@ -118,6 +154,7 @@ ptrdiff_t buddy_alloc_r(BuddyAllocator *allocator, size_t node_index, size_t tar
             bitmaptree_mark_used(allocator->bitmap, node_index);
             return node_index;
         }
+        allocator->stats.splits++;
         bitmaptree_mark_split(allocator->bitmap, node_index);
         size_t left_child_index = bitmaptree_left_child(node_index);
         return buddy_alloc_r(allocator, left_child_index, target_order);
@@ -130,9 +167,31 @@ void buddy_free_r(BuddyAllocator *allocator, size_t index) {
     if (!bitmaptree_is_root(index)) {
         size_t buddy_index = bitmaptree_buddy(index);
         if (bitmaptree_is_free(allocator->bitmap, buddy_index)) {
+            allocator->stats.merges++;
             size_t parent_index = bitmaptree_parent(index);
             buddy_free_r(allocator, parent_index);
         }
+    }
+}
+
+void buddy_dump_tree_r(BuddyAllocator *allocator, size_t index, size_t level) {
+    if (index >= bitmaptree_number_of_nodes(allocator->bitmap))
+        return;
+    size_t block_size = bitmaptree_index_to_size(allocator->bitmap, index);
+    if (bitmaptree_is_free(allocator->bitmap, index)) {
+        printf("%zu FREE\n", block_size);
+    } else if (bitmaptree_is_split(allocator->bitmap, index)) {
+        printf("%zu SPLIT\n", block_size);
+        for (size_t i = 0; i < level; i++)
+            printf("|  ");
+        printf("|--");
+        buddy_dump_tree_r(allocator, bitmaptree_left_child(index), level + 1);
+        for (size_t i = 0; i < level; i++)
+            printf("|  ");
+        printf("|--");
+        buddy_dump_tree_r(allocator, bitmaptree_right_child(index), level + 1);
+    } else {
+        printf("%zu USED\n", block_size);
     }
 }
 
