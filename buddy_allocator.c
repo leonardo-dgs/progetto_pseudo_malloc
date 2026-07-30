@@ -190,7 +190,7 @@ void buddy_dump_tree_r(BuddyAllocator *allocator, size_t index, size_t level) {
         printf("|--");
         buddy_dump_tree_r(allocator, bitmaptree_right_child(index), level + 1);
     } else {
-        printf("%zu USED\n", block_size);
+        printf("%zu USED %p\n", block_size, index_to_pointer(allocator, index));
     }
 }
 
