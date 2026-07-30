@@ -107,7 +107,6 @@ void buddy_print_stats(BuddyAllocator *allocator) {
         fprintf(stderr, "buddy_print_stats: the supplied parameter BuddyAllocator is null\n");
         return;
     }
-    printf("Buddy Allocator Stats:\n");
     printf("Total memory: %zu bytes\n", allocator->size);
     printf("Used memory: %zu bytes\n", allocator->stats.used_memory);
     printf("Free memory: %zu bytes\n", allocator->size - allocator->stats.used_memory);
