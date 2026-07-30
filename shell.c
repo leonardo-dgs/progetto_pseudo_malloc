@@ -9,12 +9,14 @@
 
 bool execute_command(BuddyAllocator *buddy_allocator, size_t argc, char **argv);
 
-void run_shell() {
+void run_shell(size_t buddy_size, size_t min_block) {
     printf("Welcome to the buddy shell!\n");
     printf("Type 'help' for a list of commands.\n");
-    size_t buddy_size = 1024 * 1024;
-    size_t buddy_block = 32;
-    BuddyAllocator *buddy_allocator = buddy_new(buddy_size, buddy_block);
+    BuddyAllocator *buddy_allocator = buddy_new(buddy_size, min_block);
+    if (buddy_allocator == NULL) {
+        fprintf(stderr, "Failed to initialize buddy allocator.\n");
+        return;
+    }
     bool running = true;
     while (running) {
         char input[256];

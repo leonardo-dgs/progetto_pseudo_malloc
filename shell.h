@@ -1,6 +1,8 @@
 #ifndef SHELL_H
 #define SHELL_H
 
-void run_shell();
+#include <stddef.h>
+
+void run_shell(size_t buddy_size, size_t min_block);
 
 #endif
