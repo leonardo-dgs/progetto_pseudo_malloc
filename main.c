@@ -4,6 +4,7 @@
 
 #include "tests.h"
 #include "shell.h"
+#include "defaults.h"
 
 int main(int argc, char** argv) {
     if (argc < 2) {
@@ -21,8 +22,8 @@ int main(int argc, char** argv) {
         run_tests();
         return 0;
     } else if (strcmp(cmd, "shell") == 0) {
-        size_t buddy_size = 1024 * 1024;
-        size_t min_block = 32;
+        size_t buddy_size = DEFAULT_BUDDY_SIZE;
+        size_t min_block = DEFAULT_BUDDY_BLOCK_SIZE;
         if (argc == 3) {
             printf("Usage: %s shell [<buddy_size> <min_block>]\n", argv[0]);
             return 1;

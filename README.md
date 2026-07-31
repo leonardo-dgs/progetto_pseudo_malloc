@@ -19,13 +19,14 @@ Il cuore del progetto è il **buddy allocator**, utilizzabile sia tramite il wra
 | `shell.c/h` | Shell interattiva che opera direttamente sul buddy allocator |
 | `tests.c/h` | Suite di test automatici |
 | `intmath.c/h` | Utility matematiche (potenze di 2, logaritmi) |
+| `defaults.h` | Contiene i parametri predefiniti |
 | `main.c` | Entry point |
 
 ## Buddy allocator
 
 - Gestisce un'area di memoria (default 1 MB) divisa in blocchi di dimensione potenza di 2.
 - La memoria fisica è ottenuta con `mmap` anonima.
-- Alloca suddividendo ricorsivamente un blocco libero fino al minimo blocco sufficiente (`min_block`, default 32 byte nella shell, 16 byte in `pseudo_malloc`).
+- Alloca suddividendo ricorsivamente un blocco libero fino al minimo blocco sufficiente (`min_block`, default 32 byte).
 - Al `free`, se il *buddy* (fratello) è anch'esso libero, i due blocchi vengono fusi ricorsivamente.
 - Lo stato è tracciato con due bitmap per livello dell'albero: una per blocchi **usati/liberi**, una per blocchi **splittati/non splittati**.
 - Esporta funzioni di debugging: `buddy_dump_tree()` e `buddy_print_stats()`.

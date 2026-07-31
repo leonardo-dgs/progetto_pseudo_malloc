@@ -1,0 +1,7 @@
+#ifndef DEFAULTS_H
+#define DEFAULTS_H
+
+#define DEFAULT_BUDDY_SIZE (1024 * 1024)
+#define DEFAULT_BUDDY_BLOCK_SIZE 32
+
+#endif

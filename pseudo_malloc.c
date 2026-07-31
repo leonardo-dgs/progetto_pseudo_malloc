@@ -3,6 +3,7 @@
 
 #include "buddy_allocator.h"
 #include "mmap_allocator.h"
+#include "defaults.h"
 
 #include "pseudo_malloc.h"
 
@@ -26,7 +27,7 @@ void *pseudo_malloc(size_t size) {
         return NULL;
     }
     if (buddy_allocator == NULL) {
-        buddy_allocator = buddy_new(BUDDY_SIZE, BUDDY_BLOCK);
+        buddy_allocator = buddy_new(DEFAULT_BUDDY_SIZE, DEFAULT_BUDDY_BLOCK_SIZE);
         if (buddy_allocator == NULL) {
             fprintf(stderr, "pseudo_free: cannot initialize buddy_allocator\n");
             return NULL;
