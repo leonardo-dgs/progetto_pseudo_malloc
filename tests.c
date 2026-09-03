@@ -113,4 +113,7 @@ void run_tests() {
     void *b5 = buddy_alloc(buddy_allocator2, 28);
     assert(buddy_is_valid_pointer(buddy_allocator2, b5));
     buddy_free(buddy_allocator2, b5);
+
+    buddy_delete(buddy_allocator);
+    buddy_delete(buddy_allocator2);
 }
