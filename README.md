@@ -43,6 +43,7 @@ Il cuore del progetto è il **buddy allocator**, utilizzabile sia tramite il wra
 ```bash
 make          # compila con -O3
 make debug    # compila con -Wall -Wextra -g
+make valgrind # esegue il programma con Valgrind per controllare la gestione della memoria
 make clean    # rimuove file oggetto ed eseguibili
 ```
 
